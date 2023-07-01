@@ -1,34 +1,35 @@
 #include <ros/ros.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
+void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr &msg) {
+	// ×ª»»ÎªPCLµãÔÆ¸ñÊ½
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::fromROSMsg(*msg, *cloud);
 
-void odomCallback(const nav_msgs::Odometry::ConstPtr& msg)
-{
-    ROS_INFO("Odometry - Position: [%f, %f, %f], Orientation: [%f, %f, %f]",
-             msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z,
-             msg->pose.pose.orientation.x, msg->pose.pose.orientation.y, msg->pose.pose.orientation.z);
+	// Ö´ĞĞÈıÎ¬ÖØ½¨Ëã·¨£¨Ê¾Àı£º¼òµ¥µÄÌåËØ»¯ÂË²¨£©
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+	pcl::VoxelGrid<pcl::PointXYZRGB> voxel_grid;
+	voxel_grid.setInputCloud(cloud);
+	voxel_grid.setLeafSize(0.01f, 0.01f, 0.01f);
+	voxel_grid.filter(*filtered_cloud);
+
+	// ¿ÉÒÔÔÚ´Ë´¦Ö´ĞĞÆäËûµÄÈıÎ¬ÖØ½¨²Ù×÷
+
+	// Êä³öÖØ½¨ºóµÄµãÔÆĞÅÏ¢
+	ROS_INFO("Reconstructed Point Cloud Size: %lu", filtered_cloud->size());
 }
 
-void imuCallback(const sensor_msgs::Imu::ConstPtr& msg)
-{
-    ROS_INFO("IMU - Orientation: [%f, %f, %f], Angular Velocity: [%f, %f, %f], Linear Acceleration: [%f, %f, %f]",
-             msg->orientation.x, msg->orientation.y, msg->orientation.z,
-             msg->angular_velocity.x, msg->angular_velocity.y, msg->angular_velocity.z,
-             msg->linear_acceleration.x, msg->linear_acceleration.y, msg->linear_acceleration.z);
-}
+int main(int argc, char **argv) {
+	ros::init(argc, argv, "point_cloud_subscriber");
+	ros::NodeHandle nh;
 
+	// ¶©ÔÄµãÔÆ»°Ìâ
+	ros::Subscriber point_cloud_sub = nh.subscribe("/camera/point_cloud", 1, pointCloudCallback);
 
-int main(int argc, char** argv)
-{
-    ros::init(argc, argv, "topic_subscriber");
-    ros::NodeHandle nh;
+	ros::spin();
 
-    // åˆ›å»ºä¸¤ä¸ªè®¢é˜…å™¨ï¼Œåˆ†åˆ«æ¥æ”¶imuå’Œodomè¯é¢˜çš„æ¶ˆæ¯
-    ros::Subscriber imuSub = nh.subscribe("/imu/data_raw", 1, imuCallback);
-    ros::Subscriber odomSub = nh.subscribe("/odom", 1, odomCallback);
-
-    ros::spin();
-
-    return 0;
+	return 0;
 }
