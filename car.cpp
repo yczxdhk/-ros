@@ -4,21 +4,21 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr &msg) {
-	// 转换为PCL点云格式
+void point(const sensor_msgs::PointCloud2::ConstPtr &msg) {
+	// 杞崲涓篜CL鐐逛簯鏍煎紡
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::fromROSMsg(*msg, *cloud);
 
-	// 执行三维重建算法（示例：简单的体素化滤波）
+	// 鎵ц涓夌淮閲嶅缓绠楁硶锛堢ず渚嬶細绠�鍗曠殑浣撶礌鍖栨护娉級
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::VoxelGrid<pcl::PointXYZRGB> voxel_grid;
 	voxel_grid.setInputCloud(cloud);
 	voxel_grid.setLeafSize(0.01f, 0.01f, 0.01f);
 	voxel_grid.filter(*filtered_cloud);
 
-	// 可以在此处执行其他的三维重建操作
+	// 鍙互鍦ㄦ澶勬墽琛屽叾浠栫殑涓夌淮閲嶅缓鎿嶄綔
 
-	// 输出重建后的点云信息
+	// 杈撳嚭閲嶅缓鍚庣殑鐐逛簯淇℃伅
 	ROS_INFO("Reconstructed Point Cloud Size: %lu", filtered_cloud->size());
 }
 
@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
 	ros::init(argc, argv, "point_cloud_subscriber");
 	ros::NodeHandle nh;
 
-	// 订阅点云话题
-	ros::Subscriber point_cloud_sub = nh.subscribe("/camera/point_cloud", 1, pointCloudCallback);
+	// 璁㈤槄鐐逛簯璇濋
+	ros::Subscriber point_cloud_sub = nh.subscribe("/camera/point_cloud", 1, point);
 
 	ros::spin();
 
