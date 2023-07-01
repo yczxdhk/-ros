@@ -1,9 +1,22 @@
 #include <ros/ros.h>
-#include <sensor_msgs/Image.h>
-#include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+#include <sensor_msgs/Image.h>
 
-void colorImageCallback(const sensor_msgs::Image::ConstPtr &msg) {
+
+
+
+void depth(const sensor_msgs::Image::ConstPtr &msg) {
+
+	cv::Mat depth_img = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::TYPE_32FC1)->image;
+
+
+	cv::imshow("Depth Image", depth_img);
+	cv::waitKey(1);
+}
+
+
+void color(const sensor_msgs::Image::ConstPtr &msg) {
 
 	cv_bridge::CvImagePtr cv_ptr;
 	try {
@@ -18,14 +31,6 @@ void colorImageCallback(const sensor_msgs::Image::ConstPtr &msg) {
 	cv::waitKey(1);
 }
 
-void depthImageCallback(const sensor_msgs::Image::ConstPtr &msg) {
-
-	cv::Mat depth_img = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::TYPE_32FC1)->image;
-
-
-	cv::imshow("Depth Image", depth_img);
-	cv::waitKey(1);
-}
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "camera_viewer");
@@ -33,8 +38,8 @@ int main(int argc, char **argv) {
 
 	ros::NodeHandle nh;
 
-	ros::Subscriber color_image_sub = nh.subscribe("/camera/color/image_raw", 10, colorImageCallback);
-	ros::Subscriber depth_image_sub = nh.subscribe("/camera/depth/image_rect_raw", 10, depthImageCallback);
+	ros::Subscriber color_image_sub = nh.subscribe("/camera/color/image_raw", 10, color);
+	ros::Subscriber depth_image_sub = nh.subscribe("/camera/depth/image_rect_raw", 10, depth);
 
 	ros::spin();
 
