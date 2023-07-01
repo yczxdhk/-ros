@@ -5,11 +5,11 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/extract_indices.h>
 
-void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
+void point(const sensor_msgs::PointCloud2ConstPtr &msg) {
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::fromROSMsg(*msg, *cloud);
 
-	// ½øĞĞÓïÒå·Ö¸îËã·¨£¨Ê¾Àı£ºÆ½Ãæ·Ö¸î£©
+	// è¿›è¡Œè¯­ä¹‰åˆ†å‰²ç®—æ³•ï¼ˆç¤ºä¾‹ï¼šå¹³é¢åˆ†å‰²ï¼‰
 	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
 	pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 	pcl::SACSegmentation<pcl::PointXYZRGB> seg;
@@ -19,7 +19,7 @@ void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
 	seg.setInputCloud(cloud);
 	seg.segment(*inliers, *coefficients);
 
-	// ÌáÈ¡·Ö¸î½á¹û
+	// æå–åˆ†å‰²ç»“æœ
 	pcl::PointCloud<pclPointXYZRGB>::Ptr segmented_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::ExtractIndices<pcl::PointXYZRGB> extract;
 	extract.setInputCloud(cloud);
@@ -27,9 +27,9 @@ void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &msg) {
 	extract.setNegative(false);
 	extract.filter(*segmented_cloud);
 
-	// ¿ÉÒÔÔÚ´Ë´¦Ö´ĞĞÆäËûµÄÓïÒå·Ö¸î²Ù×÷
+	// å¯ä»¥åœ¨æ­¤å¤„æ‰§è¡Œå…¶ä»–çš„è¯­ä¹‰åˆ†å‰²æ“ä½œ
 
-	// Êä³ö·Ö¸îºóµÄµãÔÆĞÅÏ¢
+	// è¾“å‡ºåˆ†å‰²åçš„ç‚¹äº‘ä¿¡æ¯
 	ROS_INFO("Segmented Point Cloud Size: %lu", segmented_cloud->size());
 }
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	ros::init(argc, argv, "semantic_segmentation_subscriber");
 	::NodeHandle nh;
 
-	ros::Subscriber sub = nh.subscribe("/camera/point_cloud",, pointCloudCallback::spin();
+	ros::Subscriber sub = nh.subscribe("/camera/point_cloud",, point::spin();
 
 	                                   return 0;
 }
